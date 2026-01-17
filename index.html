@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Komplett guide för att publicera appar med GitHub och Firebase">
+    <meta name="theme-color" content="#00ff88">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="App Guide">
+    <title>App Guide 📱</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --accent: #0066ff;
+            --accent-dim: #0052cc;
+            --border: #e0e0e0;
+            --success: #28a745;
+            --warning: #ffc107;
+            --error: #dc3545;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #00a8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Mode selector */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .mode-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .mode-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .mode-card.active {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .mode-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .mode-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .mode-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Content area */
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Menu mode */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .menu-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+        }
+
+        .menu-item-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .menu-item-icon {
+            font-size: 1.5rem;
+        }
+
+        .menu-item-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .menu-item-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Step mode */
+        .steps-container {
+            position: relative;
+        }
+
+        .step {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .step.active {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: var(--bg-primary);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .step-content {
+            margin-bottom: 2rem;
+        }
+
+        .step-content h3 {
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .step-content ol, .step-content ul {
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .step-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content code {
+            background: var(--bg-secondary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .code-block code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .info-box {
+            background: rgba(0, 102, 255, 0.08);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: var(--accent);
+        }
+
+        .warning-box {
+            background: rgba(255, 193, 7, 0.08);
+            border-left: 3px solid var(--warning);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box strong {
+            color: #e69500;
+        }
+
+        /* Navigation */
+        .step-nav {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dim);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress indicator */
+        .progress-indicator {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--accent);
+            transform: scale(1.5);
+        }
+
+        .progress-dot.completed {
+            background: var(--accent-dim);
+        }
+
+        /* Detail view */
+        .detail-view {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-icon {
+            font-size: 2rem;
+        }
+
+        .detail-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .detail-content {
+            line-height: 1.8;
+        }
+
+        .detail-content h3 {
+            color: var(--accent);
+            margin: 2rem 0 1rem;
+            font-size: 1.25rem;
+        }
+
+        .detail-content h4 {
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .back-btn {
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--accent);
+        }
+
+        /* App list styles */
+        .app-list-container {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .firebase-config-box {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .firebase-config-box textarea {
+            width: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .firebase-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .firebase-status.connected {
+            background: rgba(40, 167, 69, 0.08);
+            color: #1e7e34;
+        }
+
+        .firebase-status.disconnected {
+            background: rgba(220, 53, 69, 0.08);
+            color: #bd2130;
+        }
+
+        .add-app-form {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .add-app-form input {
+            flex: 1;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .add-app-form input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+
+        .add-app-form input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .app-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 4px var(--shadow);
+        }
+
+        .app-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .app-icon {
+            font-size: 1.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 168, 255, 0.1) 100%);
+            border-radius: 0.5rem;
+        }
+
+        .app-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-name {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .app-url {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-family: 'Space Mono', monospace;
+            overflow-x: auto;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .app-url {
+                white-space: normal;
+                word-break: break-all;
+                overflow-x: visible;
+            }
+        }
+
+        .app-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .icon-btn.delete:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Guide overlay */
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .guide-overlay.active {
+            display: flex;
+        }
+
+        .guide-popup {
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: popupIn 0.3s ease;
+        }
+
+        @keyframes popupIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .guide-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guide-popup-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .close-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .guide-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .guide-option {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .guide-option:hover {
+            border-color: var(--accent);
+            background: var(--bg-card);
+            transform: translateX(4px);
+        }
+
+        .guide-option-icon {
+            font-size: 1.75rem;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 168, 255, 0.1) 100%);
+            border-radius: 0.75rem;
+        }
+
+        .guide-option-content {
+            flex: 1;
+        }
+
+        .guide-option-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .guide-option-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .add-app-form {
+                flex-direction: column;
+            }
+
+            .app-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .app-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .guide-popup {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>App Guide 📱</h1>
+            <p>Din kompletta guide från app till färdig installation</p>
+        </div>
+
+        <!-- Mina Appar section - Always visible -->
+        <div id="myAppsSection">
+            <div class="app-list-container">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 2rem;">🚀</span>
+                        <h2 style="font-size: 1.75rem; font-weight: 700; margin: 0;">Mina Appar</h2>
+                    </div>
+                </div>
+
+                <div id="firebaseStatus" class="firebase-status connected" style="margin-bottom: 2rem;">
+                    <span>🔄</span><span>Ansluter till Firebase...</span>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color: var(--accent); font-size: 1.1rem;">📱 Lägg till App</h3>
+                <div class="add-app-form">
+                    <input type="text" id="appNameInput" placeholder="App-namn (t.ex. StädQuest)" />
+                    <input type="url" id="appUrlInput" placeholder="URL (t.ex. https://patriknp.github.io/stadquest/)" />
+                    <button class="btn btn-primary" onclick="addApp()">➕ Lägg till</button>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color: var(--accent); font-size: 1.1rem;">📋 Dina Appar</h3>
+                <div class="app-list" id="appList"></div>
+            </div>
+        </div>
+
+        <!-- Guide Menu Button -->
+        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); text-align: center;">
+            <button class="btn btn-secondary" onclick="showGuideMenu()" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 2rem;">
+                <span style="font-size: 1rem;">📚</span>
+                <span>Guide</span>
+            </button>
+        </div>
+
+        <!-- Guide overlay popup -->
+        <div id="guideOverlay" class="guide-overlay" onclick="closeGuideMenu(event)">
+            <div class="guide-popup" onclick="event.stopPropagation()">
+                <div class="guide-popup-header">
+                    <div class="guide-popup-title">
+                        <span>📚</span>
+                        <span>Guide</span>
+                    </div>
+                    <button class="close-btn" onclick="closeGuideMenu()">×</button>
+                </div>
+                <div class="guide-options">
+                    <div class="guide-option" onclick="selectGuideMode('menu')">
+                        <div class="guide-option-icon">📋</div>
+                        <div class="guide-option-content">
+                            <div class="guide-option-title">Meny</div>
+                            <div class="guide-option-desc">Välj ämne direkt från listan</div>
+                        </div>
+                    </div>
+                    <div class="guide-option" onclick="selectGuideMode('steps')">
+                        <div class="guide-option-icon">🎯</div>
+                        <div class="guide-option-content">
+                            <div class="guide-option-title">Steg-för-steg</div>
+                            <div class="guide-option-desc">Guidad genomgång från början till slut</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu mode -->
+        <div id="menuContent" class="content">
+            <div class="back-btn" onclick="backToStart()" style="margin-bottom: 1rem;">← Tillbaka till start</div>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="showDetail('github')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🐙</span>
+                        <span class="menu-item-title">GitHub Setup</span>
+                    </div>
+                    <div class="menu-item-desc">Skapa konto och publicera din första app</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('firebase')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🔥</span>
+                        <span class="menu-item-title">Firebase Setup</span>
+                    </div>
+                    <div class="menu-item-desc">Aktivera realtidssynkning mellan enheter</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('publish')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🚀</span>
+                        <span class="menu-item-title">Publicera App</span>
+                    </div>
+                    <div class="menu-item-desc">Ladda upp och gör din app tillgänglig online</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('install')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">📱</span>
+                        <span class="menu-item-title">Installera på Mobil</span>
+                    </div>
+                    <div class="menu-item-desc">Installera som riktig app på iPhone och Android</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('update')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🔄</span>
+                        <span class="menu-item-title">Uppdatera App</span>
+                    </div>
+                    <div class="menu-item-desc">Gör ändringar och publicera uppdateringar</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('database')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🗄️</span>
+                        <span class="menu-item-title">Databasstruktur</span>
+                    </div>
+                    <div class="menu-item-desc">Organisera data i Firebase för flera appar</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('security')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🔒</span>
+                        <span class="menu-item-title">Säkerhet</span>
+                    </div>
+                    <div class="menu-item-desc">Skydda din data med säkerhetsregler</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('troubleshoot')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">🛠️</span>
+                        <span class="menu-item-title">Felsökning</span>
+                    </div>
+                    <div class="menu-item-desc">Lösningar på vanliga problem</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('costs')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">💰</span>
+                        <span class="menu-item-title">Kostnader</span>
+                    </div>
+                    <div class="menu-item-desc">Vad är gratis och vad kostar det?</div>
+                </div>
+
+                <div class="menu-item" onclick="showDetail('checklist')">
+                    <div class="menu-item-header">
+                        <span class="menu-item-icon">✅</span>
+                        <span class="menu-item-title">Snabb Checklista</span>
+                    </div>
+                    <div class="menu-item-desc">10 steg för att publicera en ny app</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Steps mode -->
+        <div id="stepsContent" class="content">
+            <div class="back-btn" onclick="backToStart()" style="margin-bottom: 1rem;">← Tillbaka till start</div>
+            <div class="progress-indicator" id="progressIndicator"></div>
+            <div class="steps-container" id="stepsContainer"></div>
+            <div class="step-nav">
+                <button class="btn btn-secondary" onclick="prevStep()" id="prevBtn">← Föregående</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="nextBtn">Nästa →</button>
+            </div>
+        </div>
+
+        <!-- Detail view -->
+        <div id="detailContent" class="content"></div>
+    </div>
+
+    <script>
+        // Firebase configuration (redan konfigurerad!)
+        let firebaseConfig = {
+            apiKey: "AIzaSyCZjOBDcyyLMQZDeQPKK0bpdRSh3prLs0M",
+            authDomain: "patrikapps-cd169.firebaseapp.com",
+            databaseURL: "https://patrikapps-cd169-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "patrikapps-cd169",
+            storageBucket: "patrikapps-cd169.firebasestorage.app",
+            messagingSenderId: "334803684499",
+            appId: "1:334803684499:web:13c0f00c357ad5c97ed166"
+        };
+        let db = null;
+        let myApps = [];
+        let isFirebaseConnected = false;
+
+        // Starta Firebase automatiskt
+        initFirebase();
+
+        async function initFirebase() {
+            try {
+                // Dynamisk import av Firebase
+                const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const firebaseDb = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                
+                const app = firebaseApp.initializeApp(firebaseConfig);
+                db = firebaseDb.getDatabase(app);
+                isFirebaseConnected = true;
+                
+                // Lyssna på ändringar
+                const appsRef = firebaseDb.ref(db, 'guide-app/apps');
+                firebaseDb.onValue(appsRef, (snapshot) => {
+                    myApps = snapshot.val() || [];
+                    renderAppList();
+                    updateFirebaseStatus(true);
+                });
+                
+                // Spara Firebase imports globalt
+                window.firebaseDb = firebaseDb;
+            } catch (e) {
+                console.error('Firebase connection failed:', e);
+                isFirebaseConnected = false;
+                updateFirebaseStatus(false);
+                // Fallback till localStorage
+                loadAppsFromLocalStorage();
+            }
+        }
+
+        function loadAppsFromLocalStorage() {
+            const saved = localStorage.getItem('my_apps');
+            if (saved) {
+                myApps = JSON.parse(saved);
+                renderAppList();
+            }
+        }
+
+        function saveAppsToLocalStorage() {
+            localStorage.setItem('my_apps', JSON.stringify(myApps));
+        }
+
+        async function saveAppsToFirebase() {
+            if (db && window.firebaseDb) {
+                const appsRef = window.firebaseDb.ref(db, 'guide-app/apps');
+                await window.firebaseDb.set(appsRef, myApps);
+            }
+        }
+
+        function updateFirebaseStatus(connected) {
+            const statusEl = document.getElementById('firebaseStatus');
+            if (statusEl) {
+                if (connected) {
+                    statusEl.className = 'firebase-status connected';
+                    statusEl.innerHTML = '<span>✅</span><span>Ansluten - Synkar mellan enheter</span>';
+                } else {
+                    statusEl.className = 'firebase-status disconnected';
+                    statusEl.innerHTML = '<span>⚠️</span><span>Offline-läge - Endast denna enhet</span>';
+                }
+            }
+        }
+
+        window.saveFirebaseConfig = function() {
+            const configText = document.getElementById('firebaseConfigInput').value.trim();
+            if (!configText) {
+                alert('Klistra in din Firebase-konfiguration först!');
+                return;
+            }
+
+            try {
+                // Extrahera JSON från eventuell JavaScript-kod
+                const jsonMatch = configText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    firebaseConfig = JSON.parse(jsonMatch[0]);
+                    localStorage.setItem('firebase_config', JSON.stringify(firebaseConfig));
+                    initFirebase();
+                    alert('✅ Firebase konfigurerad! Starta om sidan för att ansluta.');
+                    location.reload();
+                } else {
+                    throw new Error('Ingen giltig JSON hittades');
+                }
+            } catch (e) {
+                alert('❌ Ogiltig konfiguration! Kontrollera att du kopierat rätt från Firebase Console.');
+                console.error(e);
+            }
+        }
+
+        window.addApp = function() {
+            const nameInput = document.getElementById('appNameInput');
+            const urlInput = document.getElementById('appUrlInput');
+            
+            const name = nameInput.value.trim();
+            const url = urlInput.value.trim();
+            
+            if (!name || !url) {
+                alert('Fyll i både namn och URL!');
+                return;
+            }
+
+            const newApp = {
+                id: Date.now(),
+                name: name,
+                url: url,
+                icon: getEmojiForApp(name),
+                addedAt: new Date().toISOString()
+            };
+
+            myApps.push(newApp);
+            
+            // Spara
+            if (isFirebaseConnected) {
+                saveAppsToFirebase();
+            } else {
+                saveAppsToLocalStorage();
+                renderAppList();
+            }
+
+            // Rensa inputs
+            nameInput.value = '';
+            urlInput.value = '';
+            nameInput.focus();
+        }
+
+        function getEmojiForApp(name) {
+            const lower = name.toLowerCase();
+            if (lower.includes('städ') || lower.includes('clean')) return '🧹';
+            if (lower.includes('lager') || lower.includes('inventory')) return '📦';
+            if (lower.includes('sync') || lower.includes('test')) return '🔄';
+            if (lower.includes('guide') || lower.includes('help')) return '📚';
+            if (lower.includes('fitness') || lower.includes('träning')) return '💪';
+            return '📱';
+        }
+
+        window.deleteApp = function(id) {
+            if (!confirm('Ta bort denna app?')) return;
+            
+            myApps = myApps.filter(app => app.id !== id);
+            
+            if (isFirebaseConnected) {
+                saveAppsToFirebase();
+            } else {
+                saveAppsToLocalStorage();
+                renderAppList();
+            }
+        }
+
+        window.copyUrl = function(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                // Visual feedback
+                const btn = event.currentTarget;
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '✓';
+                btn.style.color = 'var(--success)';
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.color = '';
+                }, 1000);
+            }).catch(() => {
+                alert('Kopiering misslyckades. Kopiera manuellt: ' + url);
+            });
+        }
+
+        window.openApp = function(url) {
+            window.open(url, '_blank');
+        }
+
+        function renderAppList() {
+            const listEl = document.getElementById('appList');
+            if (!listEl) return;
+
+            if (myApps.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📱</div>
+                        <div>Inga appar tillagda ännu</div>
+                        <div style="font-size: 0.875rem; margin-top: 0.5rem;">Lägg till dina app-adresser här för att snabbt komma åt dem på alla enheter</div>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = myApps.map(app => `
+                <div class="app-item">
+                    <div class="app-icon">${app.icon}</div>
+                    <div class="app-info">
+                        <div class="app-name">${app.name}</div>
+                        <div class="app-url">${app.url}</div>
+                    </div>
+                    <div class="app-actions">
+                        <button class="icon-btn" onclick="openApp('${app.url}')" title="Öppna">🔗</button>
+                        <button class="icon-btn" onclick="copyUrl('${app.url}')" title="Kopiera URL">📋</button>
+                        <button class="icon-btn delete" onclick="deleteApp(${app.id})" title="Ta bort">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.showMyApps = function() {
+            document.getElementById('menuContent').classList.remove('active');
+            const detailContent = document.getElementById('detailContent');
+            detailContent.classList.add('active');
+            
+            detailContent.innerHTML = `
+                <div class="back-btn" onclick="backToStart()">← Tillbaka till start</div>
+                <div class="app-list-container">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                        <span style="font-size: 2rem;">🚀</span>
+                        <h2 style="font-size: 1.75rem; font-weight: 700;">Mina Appar</h2>
+                    </div>
+
+                    <div id="firebaseStatus" class="firebase-status ${isFirebaseConnected ? 'connected' : 'disconnected'}" style="margin-bottom: 2rem;">
+                        ${isFirebaseConnected ? 
+                            '<span>✅</span><span>Ansluten - Synkar mellan enheter</span>' : 
+                            '<span>🔄</span><span>Ansluter till Firebase...</span>'}
+                    </div>
+
+                    <h3 style="margin-bottom: 1rem; color: var(--accent);">📱 Lägg till App</h3>
+                    <div class="add-app-form">
+                        <input type="text" id="appNameInput" placeholder="App-namn (t.ex. StädQuest)" />
+                        <input type="url" id="appUrlInput" placeholder="URL (t.ex. https://patriknp.github.io/stadquest/)" />
+                        <button class="btn btn-primary" onclick="addApp()">➕</button>
+                    </div>
+
+                    <h3 style="margin-bottom: 1rem; color: var(--accent);">📋 Dina Appar</h3>
+                    <div class="app-list" id="appList"></div>
+                </div>
+            `;
+            
+            renderAppList();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Original guide app code
+        let currentMode = null;
+        let currentStep = 0;
+        let currentDetail = null;
+
+        const steps = [
+            {
+                title: "Förberedelser",
+                icon: "🎯",
+                content: `
+                    <h3>Välkommen!</h3>
+                    <p>Denna guide visar dig hur du tar en HTML-app och gör den tillgänglig online med realtidssynkning mellan enheter.</p>
+                    
+                    <div class="info-box">
+                        <strong>⏱️ Tidsåtgång:</strong><br>
+                        • Första gången: 15-20 minuter<br>
+                        • Efterföljande appar: ~5 minuter
+                    </div>
+
+                    <h3>Vad du behöver:</h3>
+                    <ul>
+                        <li>En email-adress (Gmail fungerar bra)</li>
+                        <li>Din HTML-app (t.ex. stadquest.html)</li>
+                        <li>10-15 minuter tid</li>
+                    </ul>
+
+                    <h3>Vad du får:</h3>
+                    <ul>
+                        <li>✅ Din app online (gratis)</li>
+                        <li>✅ Realtidssynkning mellan enheter</li>
+                        <li>✅ Installation som riktig app på mobiler</li>
+                        <li>✅ Total kostnad: 0 kr</li>
+                    </ul>
+                `
+            },
+            {
+                title: "GitHub-konto",
+                icon: "🐙",
+                content: `
+                    <h3>Skapa GitHub-konto</h3>
+                    <p>GitHub är där din app kommer att ligga online. Det är helt gratis!</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>Gå till <code>https://github.com</code></li>
+                        <li>Klicka på "Sign up"</li>
+                        <li>Fyll i:
+                            <ul>
+                                <li>Email-adress</li>
+                                <li>Välj lösenord</li>
+                                <li>Välj användarnamn (t.ex. "patriknp")</li>
+                            </ul>
+                        </li>
+                        <li>Verifiera din email</li>
+                        <li>Klart! 🎉</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Välj ett kort och lätt användarnamn - det blir en del av dina app-adresser!
+                    </div>
+                `
+            },
+            {
+                title: "Firebase-konto",
+                icon: "🔥",
+                content: `
+                    <h3>Skapa Firebase-projekt</h3>
+                    <p>Firebase används för att synka data mellan enheter i realtid.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>Gå till <code>https://console.firebase.google.com</code></li>
+                        <li>Logga in med ditt Google-konto</li>
+                        <li>Klicka "Add project" / "Lägg till projekt"</li>
+                        <li>Namnge projektet: <code>PatrikApps</code> (eller vad du vill)</li>
+                        <li>Inaktivera Google Analytics (behövs inte)</li>
+                        <li>Klicka "Create project"</li>
+                        <li>Vänta ~30 sekunder</li>
+                        <li>Klart! 🎉</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Ett Firebase-projekt kan användas för ALLA dina appar!
+                    </div>
+                `
+            },
+            {
+                title: "Aktivera Database",
+                icon: "🗄️",
+                content: `
+                    <h3>Aktivera Realtime Database</h3>
+                    <p>Nu aktiverar vi databasen som synkar data mellan enheter.</p>
+                    
+                    <h4>I Firebase Console:</h4>
+                    <ol>
+                        <li>Klicka på "Realtime Database" i vänstermenyn</li>
+                        <li>Klicka "Create Database"</li>
+                        <li>Välj plats: <code>europe-west1</code> (närmast Sverige)</li>
+                        <li>Välj säkerhetsregler: "Start in test mode"</li>
+                        <li>Klicka "Enable"</li>
+                        <li>Vänta ~10 sekunder</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <strong>⚠️ OBS:</strong> Test mode tillåter alla att läsa/skriva. Bra för att komma igång, men ändra detta senare! Se säkerhetsavsnittet.
+                    </div>
+                `
+            },
+            {
+                title: "Hämta Firebase Config",
+                icon: "🔑",
+                content: `
+                    <h3>Hämta din Firebase-konfiguration</h3>
+                    <p>Nu ska vi få de nycklar som din app behöver.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>I Firebase Console, klicka på kugghjulet ⚙️ bredvid "Project Overview"</li>
+                        <li>Välj "Project settings"</li>
+                        <li>Scrolla ner till "Your apps"</li>
+                        <li>Klicka på webb-ikonen <code>&lt;/&gt;</code></li>
+                        <li>Namnge appen: "Mina Appar"</li>
+                        <li>KRYSSA INTE I Firebase Hosting</li>
+                        <li>Klicka "Register app"</li>
+                    </ol>
+
+                    <h4>Kopiera detta:</h4>
+                    <div class="code-block"><code>const firebaseConfig = {
+  apiKey: "AIzaSyA...",
+  authDomain: "...",
+  databaseURL: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};</code></div>
+
+                    <div class="info-box">
+                        <strong>💡 Viktigt:</strong> Spara denna config i en textfil! Du använder samma config för alla appar.
+                    </div>
+                `
+            },
+            {
+                title: "Förbered App",
+                icon: "📝",
+                content: `
+                    <h3>Förbered din app-fil</h3>
+                    <p>Nu lägger vi in Firebase-konfigurationen i din app.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>Döp din HTML-fil till <code>index.html</code></li>
+                        <li>Öppna filen i en textredigerare</li>
+                        <li>Hitta JavaScript-sektionen (där <code>&lt;script&gt;</code> står)</li>
+                        <li>Lägg till längst upp i scriptet:</li>
+                    </ol>
+
+                    <div class="code-block"><code>// Firebase konfiguration
+const firebaseConfig = {
+  // KLISTRA IN DIN CONFIG HÄR
+};
+
+// Importera Firebase
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// Initiera
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);</code></div>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Behåller du originalnamnet (t.ex. stadquest.html) funkar det också, men URL:en blir längre.
+                    </div>
+                `
+            },
+            {
+                title: "Skapa Repository",
+                icon: "📦",
+                content: `
+                    <h3>Skapa GitHub Repository</h3>
+                    <p>Ett repository är som en mapp för din app på GitHub.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>Gå till <code>https://github.com</code></li>
+                        <li>Klicka på gröna "New" eller +-tecknet → "New repository"</li>
+                        <li>Repository namn: <code>stadquest</code> (små bokstäver, inga mellanslag)</li>
+                        <li>Beskrivning (valfri): "StädQuest familjeapp"</li>
+                        <li>Välj "Public"</li>
+                        <li>Kryssa i "Add a README file"</li>
+                        <li>Klicka "Create repository"</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Skapa ett separat repo för varje app du gör!
+                    </div>
+                `
+            },
+            {
+                title: "Ladda upp App",
+                icon: "⬆️",
+                content: `
+                    <h3>Ladda upp din app</h3>
+                    <p>Nu lägger vi din app på GitHub.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>I ditt nya repo, klicka "Add file" → "Upload files"</li>
+                        <li>Dra din <code>index.html</code> till rutan</li>
+                        <li>Om du har ikoner eller manifest.json, dra även dem</li>
+                        <li>Skriv commit-meddelande: "Initial upload"</li>
+                        <li>Klicka "Commit changes"</li>
+                        <li>Vänta tills uppladdningen är klar</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>✅ Klart!</strong> Din app ligger nu på GitHub!
+                    </div>
+                `
+            },
+            {
+                title: "Aktivera GitHub Pages",
+                icon: "🌐",
+                content: `
+                    <h3>Gör appen tillgänglig online</h3>
+                    <p>Nu publicerar vi appen så alla kan nå den.</p>
+                    
+                    <h4>Steg:</h4>
+                    <ol>
+                        <li>I ditt repo, klicka "Settings" (längst upp till höger)</li>
+                        <li>Klicka "Pages" i vänstermenyn</li>
+                        <li>Under "Source":
+                            <ul>
+                                <li>Branch: Välj <code>main</code></li>
+                                <li>Folder: Välj <code>/ (root)</code></li>
+                            </ul>
+                        </li>
+                        <li>Klicka "Save"</li>
+                        <li>Vänta 2-3 minuter</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>🎉 Din app är nu live!</strong><br>
+                        URL: <code>https://användarnamn.github.io/reponamn/</code>
+                    </div>
+                `
+            },
+            {
+                title: "Installera på Mobil",
+                icon: "📱",
+                content: `
+                    <h3>Installera som app på din mobil</h3>
+                    <p>Nu kan du installera appen som om det vore en riktig app från App Store!</p>
+                    
+                    <h4>iPhone/iPad (Safari):</h4>
+                    <ol>
+                        <li>Öppna appen i Safari</li>
+                        <li>Tryck på Dela-knappen (fyrkant med pil uppåt)</li>
+                        <li>Scrolla ner → "Lägg till på hemskärmen"</li>
+                        <li>Bekräfta</li>
+                        <li>Appen finns nu på hemskärmen! 🎉</li>
+                    </ol>
+
+                    <h4>Android (Chrome/Samsung Internet):</h4>
+                    <ol>
+                        <li>Öppna appen i webbläsaren</li>
+                        <li>Tryck på menyn (tre punkter)</li>
+                        <li>Välj "Installera app" eller "Lägg till på startskärmen"</li>
+                        <li>Bekräfta</li>
+                        <li>Appen finns nu på hemskärmen! 🎉</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>✨ Perfekt!</strong> Öppna appen på flera enheter samtidigt och se hur ändringar synkar i realtid!
+                    </div>
+                `
+            },
+            {
+                title: "Klart!",
+                icon: "🎉",
+                content: `
+                    <h3>Grattis! Du är klar! 🎉</h3>
+                    <p>Din app är nu publicerad och kan användas på alla enheter!</p>
+                    
+                    <h4>Vad du har åstadkommit:</h4>
+                    <ul>
+                        <li>✅ Skapat GitHub och Firebase-konton</li>
+                        <li>✅ Publicerat din app online</li>
+                        <li>✅ Aktiverat realtidssynkning</li>
+                        <li>✅ Installerat på mobiler</li>
+                        <li>✅ Total kostnad: 0 kr</li>
+                    </ul>
+
+                    <h4>Nästa steg:</h4>
+                    <ul>
+                        <li>Testa att ändra något på en enhet och se det uppdateras på en annan</li>
+                        <li>Skapa fler appar med samma Firebase-projekt</li>
+                        <li>Läs säkerhetsavsnittet för att skydda din data</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Använd menyn för att hitta specifika avsnitt som säkerhet, uppdateringar och felsökning!
+                    </div>
+                `
+            }
+        ];
+
+        const details = {
+            github: {
+                title: "GitHub Setup",
+                icon: "🐙",
+                content: `
+                    <h3>Skapa GitHub-konto</h3>
+                    <p>GitHub är där din app kommer att ligga online. Det är helt gratis och används av miljontals utvecklare.</p>
+                    
+                    <h4>Steg-för-steg:</h4>
+                    <ol>
+                        <li>Gå till <code>https://github.com</code></li>
+                        <li>Klicka på "Sign up"</li>
+                        <li>Fyll i din email-adress</li>
+                        <li>Välj ett starkt lösenord</li>
+                        <li>Välj användarnamn (t.ex. "patriknp")
+                            <ul>
+                                <li>Använd små bokstäver</li>
+                                <li>Inga mellanslag</li>
+                                <li>Bindestreck ok</li>
+                            </ul>
+                        </li>
+                        <li>Verifiera din email</li>
+                        <li>Klart!</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Viktigt:</strong> Ditt användarnamn blir en del av dina app-adresser:<br>
+                        <code>https://användarnamn.github.io/app-namn/</code>
+                    </div>
+
+                    <h3>Skapa ett Repository</h3>
+                    <p>Ett repository (repo) är som en mapp för varje app.</p>
+
+                    <h4>Skapa nytt repo:</h4>
+                    <ol>
+                        <li>Klicka på gröna "New" eller +-tecknet → "New repository"</li>
+                        <li>Repository namn: <code>stadquest</code> (exempel)
+                            <ul>
+                                <li>Små bokstäver rekommenderas</li>
+                                <li>Inga mellanslag (använd bindestreck: my-app)</li>
+                                <li>Kort och beskrivande</li>
+                            </ul>
+                        </li>
+                        <li>Beskrivning (valfri): "StädQuest - Familjeapp"</li>
+                        <li>Välj "Public" (krävs för gratis hosting)</li>
+                        <li>Kryssa i "Add a README file"</li>
+                        <li>Klicka "Create repository"</li>
+                    </ol>
+
+                    <h3>Ladda upp filer</h3>
+                    <ol>
+                        <li>I ditt nya repo, klicka "Add file" → "Upload files"</li>
+                        <li>Dra din <code>index.html</code> till rutan</li>
+                        <li>Lägg även till:
+                            <ul>
+                                <li>Ikoner (icon-192.png, icon-512.png)</li>
+                                <li>manifest.json (om du har en)</li>
+                            </ul>
+                        </li>
+                        <li>Skriv commit-meddelande: "Initial upload"</li>
+                        <li>Klicka "Commit changes"</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>✅ Tips:</strong> Skapa ett separat repo för varje app för bättre organisation!
+                    </div>
+                `
+            },
+            firebase: {
+                title: "Firebase Setup",
+                icon: "🔥",
+                content: `
+                    <h3>Skapa Firebase-projekt</h3>
+                    <p>Firebase ger din app realtidssynkning mellan enheter, helt gratis för små appar.</p>
+                    
+                    <h4>Skapa projekt:</h4>
+                    <ol>
+                        <li>Gå till <code>https://console.firebase.google.com</code></li>
+                        <li>Logga in med ditt Google-konto</li>
+                        <li>Klicka "Add project"</li>
+                        <li>Projektnamn: <code>PatrikApps</code> (eller vad du vill)
+                            <ul>
+                                <li>Ett projekt kan användas för ALLA dina appar</li>
+                                <li>Du behöver bara göra detta EN gång</li>
+                            </ul>
+                        </li>
+                        <li>Google Analytics: Stäng av (behövs inte)</li>
+                        <li>Klicka "Create project"</li>
+                        <li>Vänta ~30 sekunder</li>
+                    </ol>
+
+                    <h3>Aktivera Realtime Database</h3>
+                    <ol>
+                        <li>I Firebase Console, klicka "Realtime Database" i vänstermenyn</li>
+                        <li>Klicka "Create Database"</li>
+                        <li>Välj plats: <code>europe-west1</code> (Sverige/Europa)</li>
+                        <li>Säkerhetsregler: "Start in test mode"</li>
+                        <li>Klicka "Enable"</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Viktigt:</strong> Test mode tillåter alla att läsa/skriva. Detta är OK för att komma igång, men du bör ändra säkerhetsreglerna senare! Se säkerhetsavsnittet.
+                    </div>
+
+                    <h3>Hämta konfiguration</h3>
+                    <ol>
+                        <li>Klicka på kugghjulet ⚙️ bredvid "Project Overview"</li>
+                        <li>Välj "Project settings"</li>
+                        <li>Scrolla ner till "Your apps"</li>
+                        <li>Klicka på webb-ikonen <code>&lt;/&gt;</code></li>
+                        <li>Namnge appen: "Mina Appar"</li>
+                        <li><strong>KRYSSA INTE I</strong> Firebase Hosting</li>
+                        <li>Klicka "Register app"</li>
+                    </ol>
+
+                    <h4>Du får nu se något som liknar:</h4>
+                    <div class="code-block"><code>const firebaseConfig = {
+  apiKey: "AIzaSyA...",
+  authDomain: "ditt-projekt.firebaseapp.com",
+  databaseURL: "https://ditt-projekt.europe-west1.firebasedatabase.app",
+  projectId: "ditt-projekt",
+  storageBucket: "ditt-projekt.firebasestorage.app",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
+};</code></div>
+
+                    <div class="info-box">
+                        <strong>💾 Spara detta!</strong> Kopiera hela firebaseConfig till en textfil. Du använder samma config för alla dina appar!
+                    </div>
+                `
+            },
+            publish: {
+                title: "Publicera App",
+                icon: "🚀",
+                content: `
+                    <h3>Publicera din app online</h3>
+                    <p>Nu gör vi så din app blir tillgänglig på internet!</p>
+                    
+                    <h3>1. Förbered din app</h3>
+                    <h4>Döp om filen:</h4>
+                    <ul>
+                        <li>Döp din HTML-fil till <code>index.html</code></li>
+                        <li>Detta ger renare URL:er</li>
+                    </ul>
+
+                    <h4>Lägg in Firebase:</h4>
+                    <ol>
+                        <li>Öppna din <code>index.html</code> i textredigerare</li>
+                        <li>Hitta <code>&lt;script&gt;</code>-taggen</li>
+                        <li>Lägg till LÄNGST UPP i scriptet:</li>
+                    </ol>
+
+                    <div class="code-block"><code>// Firebase konfiguration
+const firebaseConfig = {
+  // KLISTRA IN DIN CONFIG FRÅN FIREBASE HÄR
+};
+
+// Importera Firebase
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// Initiera
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Nu kan du använda Firebase!
+// Exempel spara data:
+// set(ref(db, 'path'), data);
+// 
+// Exempel lyssna på data:
+// onValue(ref(db, 'path'), (snapshot) => {
+//   const data = snapshot.val();
+// });</code></div>
+
+                    <h3>2. Skapa GitHub Repository</h3>
+                    <ol>
+                        <li>Gå till github.com</li>
+                        <li>Klicka "New" (grön knapp)</li>
+                        <li>Namnge repo: <code>stadquest</code> (eller vad du vill)</li>
+                        <li>Välj "Public"</li>
+                        <li>Kryssa i "Add a README"</li>
+                        <li>Klicka "Create repository"</li>
+                    </ol>
+
+                    <h3>3. Ladda upp</h3>
+                    <ol>
+                        <li>Klicka "Add file" → "Upload files"</li>
+                        <li>Dra din <code>index.html</code></li>
+                        <li>Om du har ikoner/manifest, dra även dem</li>
+                        <li>Commit message: "Initial upload"</li>
+                        <li>Klicka "Commit changes"</li>
+                    </ol>
+
+                    <h3>4. Aktivera GitHub Pages</h3>
+                    <ol>
+                        <li>Klicka "Settings"</li>
+                        <li>Klicka "Pages" i vänstermenyn</li>
+                        <li>Under "Source":
+                            <ul>
+                                <li>Branch: <code>main</code></li>
+                                <li>Folder: <code>/ (root)</code></li>
+                            </ul>
+                        </li>
+                        <li>Klicka "Save"</li>
+                        <li>Vänta 2-3 minuter</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>🎉 Din app är live!</strong><br>
+                        URL: <code>https://användarnamn.github.io/reponamn/</code><br>
+                        Exempel: <code>https://patriknp.github.io/stadquest/</code>
+                    </div>
+                `
+            },
+            install: {
+                title: "Installera på Mobil",
+                icon: "📱",
+                content: `
+                    <h3>Installera som riktig app</h3>
+                    <p>Din webb-app kan installeras som en riktig app på både iPhone och Android!</p>
+                    
+                    <h3>iPhone/iPad (Safari)</h3>
+                    <ol>
+                        <li>Öppna din app-URL i Safari
+                            <ul>
+                                <li><code>https://användarnamn.github.io/appnamn/</code></li>
+                            </ul>
+                        </li>
+                        <li>Tryck på <strong>Dela-knappen</strong>
+                            <ul>
+                                <li>Fyrkant med pil uppåt</li>
+                                <li>Mitt i botten på skärmen</li>
+                            </ul>
+                        </li>
+                        <li>Scrolla ner i menyn</li>
+                        <li>Välj <strong>"Lägg till på hemskärmen"</strong></li>
+                        <li>Bekräfta namnet (kan ändras)</li>
+                        <li>Tryck <strong>"Lägg till"</strong></li>
+                        <li>Appen finns nu på hemskärmen! 🎉</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Appen öppnas nu i helskärm utan Safari's gränssnitt!
+                    </div>
+
+                    <h3>Android (Chrome)</h3>
+                    <ol>
+                        <li>Öppna din app-URL i Chrome</li>
+                        <li>Tryck på <strong>menyn</strong> (tre punkter längst upp till höger)</li>
+                        <li>Välj <strong>"Installera app"</strong> eller <strong>"Lägg till på startskärmen"</strong></li>
+                        <li>Bekräfta namnet</li>
+                        <li>Tryck <strong>"Installera"</strong></li>
+                        <li>Appen finns nu på hemskärmen! 🎉</li>
+                    </ol>
+
+                    <h3>Android (Samsung Internet)</h3>
+                    <ol>
+                        <li>Öppna din app-URL i Samsung Internet</li>
+                        <li>Tryck på <strong>menyn</strong> (tre streck längst ner)</li>
+                        <li>Välj <strong>"Lägg till sida på..."</strong></li>
+                        <li>Välj <strong>"Hemskärmen"</strong></li>
+                        <li>Bekräfta namnet</li>
+                        <li>Appen finns nu på hemskärmen! 🎉</li>
+                    </ol>
+
+                    <h3>Testa synkning!</h3>
+                    <p>Nu när appen är installerad på flera enheter:</p>
+                    <ol>
+                        <li>Öppna appen på din telefon</li>
+                        <li>Öppna appen på din tablet/dator samtidigt</li>
+                        <li>Gör en ändring på en enhet</li>
+                        <li>Se hur det uppdateras DIREKT på andra enheten! ✨</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>🎊 Magiskt!</strong> Detta är Firebase i action - realtidssynkning mellan alla enheter!
+                    </div>
+                `
+            },
+            update: {
+                title: "Uppdatera App",
+                icon: "🔄",
+                content: `
+                    <h3>Uppdatera din publicerade app</h3>
+                    <p>Att göra ändringar i din app är enkelt!</p>
+                    
+                    <h3>Metod 1: Redigera direkt på GitHub (enklast)</h3>
+                    <ol>
+                        <li>Gå till ditt repo på github.com</li>
+                        <li>Klicka på filen du vill ändra (t.ex. <code>index.html</code>)</li>
+                        <li>Klicka på <strong>pennikonen</strong> (Edit)</li>
+                        <li>Gör dina ändringar i editorn</li>
+                        <li>Scrolla ner till "Commit changes"</li>
+                        <li>Skriv vad du ändrat: "Fixade bugg med poäng"</li>
+                        <li>Klicka <strong>"Commit changes"</strong></li>
+                        <li>Vänta 1-2 minuter</li>
+                        <li>Ändringarna är nu live! 🎉</li>
+                    </ol>
+
+                    <h3>Metod 2: Ladda upp ny version</h3>
+                    <ol>
+                        <li>Gör ändringar i filen på din dator</li>
+                        <li>Gå till ditt repo på GitHub</li>
+                        <li>Klicka på den gamla filen</li>
+                        <li>Klicka på <strong>papperskorgen</strong> (Delete)</li>
+                        <li>Commit deletion</li>
+                        <li>Klicka "Add file" → "Upload files"</li>
+                        <li>Dra den nya versionen</li>
+                        <li>Commit changes</li>
+                    </ol>
+
+                    <h3>Uppdatera på mobilen</h3>
+                    <p>Efter att du gjort ändringar på GitHub:</p>
+
+                    <h4>iPhone:</h4>
+                    <ul>
+                        <li>Stäng appen helt (swipe upp från botten)</li>
+                        <li>Öppna appen igen</li>
+                        <li>Appen laddar automatiskt nya versionen</li>
+                    </ul>
+
+                    <h4>Android:</h4>
+                    <ul>
+                        <li>Stäng appen helt</li>
+                        <li>Öppna appen igen</li>
+                        <li>Eller: Dra ner från toppen för att uppdatera</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Om ändringarna inte syns, gör en "hård reload":<br>
+                        • På datorn: Ctrl+Shift+R (PC) eller Cmd+Shift+R (Mac)<br>
+                        • På mobil: Rensa cache eller avinstallera och installera igen
+                    </div>
+
+                    <h3>Best practices</h3>
+                    <ul>
+                        <li>Gör små, ofta commits</li>
+                        <li>Skriv tydliga commit-meddelanden</li>
+                        <li>Testa ändringar lokalt först om möjligt</li>
+                        <li>Vänta alltid 1-2 minuter efter commit</li>
+                    </ul>
+                `
+            },
+            database: {
+                title: "Databasstruktur",
+                icon: "🗄️",
+                content: `
+                    <h3>Organisera data i Firebase</h3>
+                    <p>När du har flera appar i samma Firebase-projekt är det viktigt att hålla datan separerad.</p>
+                    
+                    <h3>Rekommenderad struktur</h3>
+                    <div class="code-block"><code>patrikapps-cd169 (ditt Firebase-projekt)
+├── stadquest/
+│   ├── users/
+│   │   ├── user1: { name: "Patrik", points: 150 }
+│   │   ├── user2: { name: "Sofie", points: 200 }
+│   ├── rooms/
+│   │   ├── room1: { name: "Kök", tasks: [...] }
+│   ├── settings/
+│       └── lastReset: "2026-01-17"
+├── billager/
+│   ├── inventory/
+│   ├── orders/
+├── synttestapp/
+    └── counter: 42</code></div>
+
+                    <h3>Använda olika "mappar"</h3>
+                    <p>I din app-kod, använd olika paths för olika appar:</p>
+
+                    <div class="code-block"><code>// För StädQuest
+const stadquestRef = ref(db, 'stadquest/users');
+set(stadquestRef, usersData);
+
+// För Billager
+const billagerRef = ref(db, 'billager/inventory');
+set(billagerRef, inventoryData);
+
+// Lyssna på ändringar
+onValue(ref(db, 'stadquest/users'), (snapshot) => {
+  const data = snapshot.val();
+  // Uppdatera app
+});</code></div>
+
+                    <h3>Fördelar med denna struktur</h3>
+                    <ul>
+                        <li>✅ Appar blandar inte ihop data</li>
+                        <li>✅ Lätt att hitta data för specifik app</li>
+                        <li>✅ Kan sätta olika säkerhetsregler per app</li>
+                        <li>✅ Enklare att debugga</li>
+                    </ul>
+
+                    <h3>Exempel: Spara användardata</h3>
+                    <div class="code-block"><code>// Spara en användare
+const userRef = ref(db, 'stadquest/users/user1');
+set(userRef, {
+  name: 'Patrik',
+  points: 150,
+  level: 5,
+  achievements: ['first_task', 'week_streak']
+});
+
+// Uppdatera specifik property
+const pointsRef = ref(db, 'stadquest/users/user1/points');
+set(pointsRef, 175);</code></div>
+
+                    <div class="info-box">
+                        <strong>💡 Tips:</strong> Tänk på Firebase som mappar i ett filsystem - organisera logiskt!
+                    </div>
+                `
+            },
+            security: {
+                title: "Säkerhet",
+                icon: "🔒",
+                content: `
+                    <h3>Säkra din Firebase-databas</h3>
+                    <p>Test mode är INTE säkert - alla kan läsa och skriva. Här är hur du fixar det!</p>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ VIKTIGT:</strong> Test mode tillåter ALLA att läsa och skriva till din databas. Detta är endast OK för testning!
+                    </div>
+
+                    <h3>Steg 1: Grundläggande säkerhetsregler</h3>
+                    <p>Begränsa åtkomst till endast dina appar:</p>
+
+                    <ol>
+                        <li>Gå till Firebase Console</li>
+                        <li>Klicka "Realtime Database"</li>
+                        <li>Klicka på fliken <strong>"Rules"</strong></li>
+                        <li>Ersätt med:</li>
+                    </ol>
+
+                    <div class="code-block"><code>{
+  "rules": {
+    "stadquest": {
+      ".read": true,
+      ".write": true
+    },
+    "billager": {
+      ".read": true,
+      ".write": true
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}</code></div>
+
+                    <p>Detta tillåter läs/skriv endast för dina specifika appar.</p>
+
+                    <h3>Steg 2: Lägg till autentisering (Rekommenderat)</h3>
+                    <p>För bättre säkerhet, kräv att användare loggar in:</p>
+
+                    <div class="code-block"><code>{
+  "rules": {
+    "stadquest": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "billager": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}</code></div>
+
+                    <h4>Aktivera autentisering:</h4>
+                    <ol>
+                        <li>I Firebase Console, klicka "Authentication"</li>
+                        <li>Klicka "Get started"</li>
+                        <li>Välj metod:
+                            <ul>
+                                <li><strong>Google</strong> - Enkelt, logga in med Google-konto</li>
+                                <li><strong>Email/Password</strong> - Traditionell inloggning</li>
+                                <li><strong>Anonymous</strong> - Tillfälliga konton</li>
+                            </ul>
+                        </li>
+                        <li>Aktivera vald metod</li>
+                    </ol>
+
+                    <h3>Steg 3: Avancerade regler</h3>
+                    <p>Bara ägaren kan ändra sin egen data:</p>
+
+                    <div class="code-block"><code>{
+  "rules": {
+    "stadquest": {
+      "users": {
+        "$uid": {
+          ".read": true,
+          ".write": "$uid === auth.uid"
+        }
+      },
+      "rooms": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    }
+  }
+}</code></div>
+
+                    <div class="info-box">
+                        <strong>✅ Best practice:</strong><br>
+                        • Använd autentisering för känslig data<br>
+                        • Testa regler innan du publicerar<br>
+                        • Läs Firebase Security Rules dokumentation
+                    </div>
+
+                    <h3>Testa dina regler</h3>
+                    <p>Firebase har en simulator i Console:</p>
+                    <ol>
+                        <li>Gå till "Rules" fliken</li>
+                        <li>Klicka "Rules Playground"</li>
+                        <li>Testa olika scenarios</li>
+                        <li>Se om reglerna fungerar som förväntat</li>
+                    </ol>
+                `
+            },
+            troubleshoot: {
+                title: "Felsökning",
+                icon: "🛠️",
+                content: `
+                    <h3>Vanliga problem och lösningar</h3>
+                    
+                    <h3>Problem: "File not found" på GitHub Pages</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Kontrollera att filen heter exakt <code>index.html</code> (små bokstäver)</li>
+                        <li>Kontrollera att GitHub Pages är aktiverat:
+                            <ul>
+                                <li>Settings → Pages</li>
+                                <li>Branch: main</li>
+                                <li>Folder: / (root)</li>
+                            </ul>
+                        </li>
+                        <li>Vänta 2-3 minuter efter aktivering</li>
+                        <li>Kontrollera URL:en: <code>https://användarnamn.github.io/reponamn/</code></li>
+                    </ol>
+
+                    <h3>Problem: Firebase ansluter inte</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Kontrollera att <code>firebaseConfig</code> är korrekt ifylld</li>
+                        <li>Öppna Developer Console (F12) → Console-fliken</li>
+                        <li>Läs felmeddelanden</li>
+                        <li>Kontrollera att Realtime Database är aktiverad</li>
+                        <li>Kontrollera att <code>databaseURL</code> finns i din config</li>
+                        <li>Testa att besöka databaseURL i webbläsaren</li>
+                    </ol>
+
+                    <h3>Problem: "Permission denied" i Firebase</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Gå till Firebase Console → Realtime Database → Rules</li>
+                        <li>Kontrollera att test mode är aktivt ELLER</li>
+                        <li>Att dina säkerhetsregler tillåter läs/skriv för rätt paths</li>
+                        <li>Exempel test mode:
+                            <div class="code-block"><code>{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</code></div>
+                        </li>
+                    </ol>
+
+                    <h3>Problem: Data synkar inte mellan enheter</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Kontrollera internetanslutning på båda enheterna</li>
+                        <li>Öppna Console (F12) på båda och kolla felmeddelanden</li>
+                        <li>Kontrollera att båda använder samma Firebase-projekt</li>
+                        <li>Kontrollera att samma <code>path</code> används i koden</li>
+                        <li>Testa att manuellt uppdatera sidan</li>
+                        <li>Kolla Firebase Console om data sparas där</li>
+                    </ol>
+
+                    <h3>Problem: App uppdaterar inte efter ändringar</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Vänta 2-3 minuter efter commit på GitHub</li>
+                        <li>Hård refresh:
+                            <ul>
+                                <li>PC: Ctrl+Shift+R</li>
+                                <li>Mac: Cmd+Shift+R</li>
+                            </ul>
+                        </li>
+                        <li>På mobil: Stäng appen helt och öppna igen</li>
+                        <li>Rensa cache:
+                            <ul>
+                                <li>Chrome: Inställningar → Integritet → Rensa webbdata</li>
+                                <li>Safari: Inställningar → Safari → Rensa historik och data</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3>Problem: Appen är långsam</h3>
+                    <h4>Lösningar:</h4>
+                    <ol>
+                        <li>Kontrollera internetanslutning</li>
+                        <li>Minska mängden data som synkas</li>
+                        <li>Använd <code>once()</code> istället för <code>onValue()</code> där det räcker</li>
+                        <li>Lägg till loading-indikatorer</li>
+                        <li>Cacha data lokalt med localStorage</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>💡 Allmän felsökningstips:</strong><br>
+                        1. Öppna alltid Developer Console (F12)<br>
+                        2. Läs felmeddelanden noggrant<br>
+                        3. Googla felmeddelandet<br>
+                        4. Kontrollera Firebase Console för data
+                    </div>
+
+                    <h3>Behöver mer hjälp?</h3>
+                    <ul>
+                        <li>Firebase Docs: <code>firebase.google.com/docs</code></li>
+                        <li>GitHub Pages Docs: <code>docs.github.com/pages</code></li>
+                        <li>Stack Overflow: Sök efter ditt fel</li>
+                    </ul>
+                `
+            },
+            costs: {
+                title: "Kostnader",
+                icon: "💰",
+                content: `
+                    <h3>Vad kostar det?</h3>
+                    <p>Bra nyheter: För familjeappar är allt gratis! 🎉</p>
+                    
+                    <h3>GitHub Pages (Hosting)</h3>
+                    <h4>Gratis tier (alltid):</h4>
+                    <ul>
+                        <li>✅ Obegränsat antal appar</li>
+                        <li>✅ 1 GB lagring per repo</li>
+                        <li>✅ 100 GB bandbredd per månad</li>
+                        <li>✅ Custom domains (egen domän)</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>För familjeappar:</strong> Alltid 100% gratis!<br>
+                        En HTML-app är typiskt ~500 KB. Du kan ha hundratals appar utan kostnad.
+                    </div>
+
+                    <h3>Firebase Realtime Database</h3>
+                    <h4>Spark Plan (Gratis tier):</h4>
+                    <ul>
+                        <li>✅ 1 GB lagring</li>
+                        <li>✅ 10 GB nedladdning per månad</li>
+                        <li>✅ 100 samtidiga anslutningar</li>
+                    </ul>
+
+                    <h4>Uppskattad användning för familjeapp (7 personer):</h4>
+                    <ul>
+                        <li>Data: ~10 MB (1% av gränsen)</li>
+                        <li>Trafik: ~100 MB/månad (1% av gränsen)</li>
+                        <li>Samtidiga användare: 7 (7% av gränsen)</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>Resultat:</strong> Alltid gratis för familjeappar! 🎉<br>
+                        Du når aldrig gränserna för normal familjeanvändning.
+                    </div>
+
+                    <h3>Blaze Plan (Betalplan)</h3>
+                    <p>Endast om du överskrider gratistieren:</p>
+                    <ul>
+                        <li>$1 per GB lagring (över 1 GB)</li>
+                        <li>$1 per GB nedladdning (över 10 GB)</li>
+                    </ul>
+
+                    <h4>När behöver du Blaze?</h4>
+                    <ul>
+                        <li>Kommersiella appar med många användare</li>
+                        <li>Appar med mycket data (bilder, videor)</li>
+                        <li>Hög trafik (tusentals användare)</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <strong>För familjeappar:</strong> Du når ALDRIG dessa gränser!
+                    </div>
+
+                    <h3>Sammanfattning</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+                        <tr style="background: var(--bg-secondary);">
+                            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Tjänst</th>
+                            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Kostnad</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border);">GitHub Pages</td>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border); color: var(--success);">Gratis ✅</td>
+                        </tr>
+                        <tr style="background: var(--bg-secondary);">
+                            <td style="padding: 0.75rem; border: 1px solid var(--border);">Firebase (familjeapp)</td>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border); color: var(--success);">Gratis ✅</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Total kostnad</strong></td>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border); color: var(--success);"><strong>0 kr / månad ✅</strong></td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box">
+                        <strong>💰 Bottom line:</strong> Skapa hur många appar du vill, för hur många familjemedlemmar du vill - helt gratis!
+                    </div>
+                `
+            },
+            checklist: {
+                title: "Snabb Checklista",
+                icon: "✅",
+                content: `
+                    <h3>Checklista: Publicera ny app</h3>
+                    <p>Använd denna för att snabbt publicera en ny app!</p>
+                    
+                    <h3>Förberedelser (Engångsjobb)</h3>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span>GitHub-konto skapat</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span>Firebase-projekt skapat</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span>Realtime Database aktiverad</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span>Firebase config sparad</span>
+                        </label>
+                    </div>
+
+                    <h3>För varje ny app</h3>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>1.</strong> Döp HTML-fil till <code>index.html</code></span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>2.</strong> Lägg in Firebase config i JavaScript</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>3.</strong> Skapa nytt GitHub repo (små bokstäver, inga mellanslag)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>4.</strong> Ladda upp <code>index.html</code> + ikoner/manifest</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>5.</strong> Aktivera GitHub Pages (Settings → Pages → main)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>6.</strong> Vänta 2-3 minuter</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>7.</strong> Testa URL: <code>https://användarnamn.github.io/reponamn/</code></span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>8.</strong> Installera på iPhone/Android</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>9.</strong> Testa synkning mellan enheter</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                            <input type="checkbox" style="width: 1.25rem; height: 1.25rem;">
+                            <span><strong>10.</strong> Klart! 🎉</span>
+                        </label>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>⏱️ Total tid:</strong> ~5 minuter när du gjort det en gång!
+                    </div>
+
+                    <h3>Snabbkommandon</h3>
+                    <div class="code-block"><code>GitHub: github.com
+Firebase: console.firebase.google.com
+Din URL: https://användarnamn.github.io/reponamn/</code></div>
+
+                    <h3>Tips</h3>
+                    <ul>
+                        <li>Döp repos till små bokstäver: <code>stadquest</code></li>
+                        <li>Ett Firebase-projekt för alla appar</li>
+                        <li>Spara Firebase config på säker plats</li>
+                        <li>Testa alltid på flera enheter</li>
+                    </ul>
+                `
+            }
+        };
+
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            // Update mode cards
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Hide mode selector
+            document.getElementById('modeSelector').style.display = 'none';
+
+            // Show selected content
+            if (mode === 'menu') {
+                document.getElementById('menuContent').classList.add('active');
+                document.getElementById('stepsContent').classList.remove('active');
+            } else {
+                document.getElementById('stepsContent').classList.add('active');
+                document.getElementById('menuContent').classList.remove('active');
+                initSteps();
+            }
+        }
+
+        function initSteps() {
+            currentStep = 0;
+            renderProgressIndicator();
+            renderSteps();
+            updateNavButtons();
+        }
+
+        function renderProgressIndicator() {
+            const indicator = document.getElementById('progressIndicator');
+            indicator.innerHTML = steps.map((_, i) => 
+                `<div class="progress-dot ${i === currentStep ? 'active' : ''} ${i < currentStep ? 'completed' : ''}"></div>`
+            ).join('');
+        }
+
+        function renderSteps() {
+            const container = document.getElementById('stepsContainer');
+            container.innerHTML = steps.map((step, i) => `
+                <div class="step ${i === currentStep ? 'active' : ''}" id="step${i}">
+                    <div class="step-header">
+                        <div class="step-number">${i + 1}</div>
+                        <div>
+                            <div class="step-title">${step.icon} ${step.title}</div>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        ${step.content}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderProgressIndicator();
+                renderSteps();
+                updateNavButtons();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderProgressIndicator();
+                renderSteps();
+                updateNavButtons();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 0;
+            
+            if (currentStep === steps.length - 1) {
+                nextBtn.textContent = '🎉 Klart!';
+                nextBtn.onclick = () => {
+                    alert('Grattis! Du har nu gått igenom hela guiden. Använd menyn för att hitta specifika avsnitt när du behöver dem.');
+                    document.getElementById('modeSelector').style.display = 'grid';
+                    document.getElementById('stepsContent').classList.remove('active');
+                };
+            } else {
+                nextBtn.textContent = 'Nästa →';
+                nextBtn.onclick = nextStep;
+            }
+        }
+
+        function showDetail(topic) {
+            const detail = details[topic];
+            if (!detail) return;
+
+            currentDetail = topic;
+            
+            document.getElementById('menuContent').classList.remove('active');
+            const detailContent = document.getElementById('detailContent');
+            detailContent.classList.add('active');
+            
+            detailContent.innerHTML = `
+                <div class="back-btn" onclick="backToMenu()">← Tillbaka till menyn</div>
+                <div class="detail-view">
+                    <div class="detail-header">
+                        <span class="detail-icon">${detail.icon}</span>
+                        <h2 class="detail-title">${detail.title}</h2>
+                    </div>
+                    <div class="detail-content">
+                        ${detail.content}
+                    </div>
+                </div>
+            `;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToMenu() {
+            document.getElementById('detailContent').classList.remove('active');
+            document.getElementById('menuContent').classList.add('active');
+            currentDetail = null;
+        }
+
+        window.backToStart = function() {
+            document.getElementById('stepsContent').classList.remove('active');
+            document.getElementById('menuContent').classList.remove('active');
+            document.getElementById('detailContent').classList.remove('active');
+            document.getElementById('modeSelector').style.display = 'none';
+            document.getElementById('myAppsSection').style.display = 'block';
+            currentMode = null;
+        }
+
+        window.showGuideMenu = function() {
+            document.getElementById('guideOverlay').classList.add('active');
+        }
+
+        window.closeGuideMenu = function(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('guideOverlay').classList.remove('active');
+        }
+
+        window.selectGuideMode = function(mode) {
+            document.getElementById('guideOverlay').classList.remove('active');
+            document.getElementById('myAppsSection').style.display = 'none';
+            
+            currentMode = mode;
+            
+            if (mode === 'menu') {
+                document.getElementById('menuContent').classList.add('active');
+                document.getElementById('stepsContent').classList.remove('active');
+            } else {
+                document.getElementById('stepsContent').classList.add('active');
+                document.getElementById('menuContent').classList.remove('active');
+                initSteps();
+            }
+        }
+
+        // Initialize app list on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAppList();
+        });
+    </script>
+</body>
+</html>
